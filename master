@@ -1,0 +1,76 @@
+# Introduction
+print("")
+print("Welcome to this investment calculator. Use this to find out how much you'll have to invest to reach your "
+      "desired wealth!")
+print("I need to know a few things first. ")
+print("")
+
+# Initializing Variables
+age = input("1. How old are you? ")
+retirementAge = input("2. At what age do you want to retire? ")
+retirementExpenditure = input("3. How much do you want to spend in retirement per year? ")
+isPrincipal = input("4. Will you be contributing a lump-sum to begin with? If Yes, input the amount you'll be "
+                    "contributing. If no, please input 0. ")
+intRate = input("5. What is your expected rate of return? (8% is a reasonable bet) Please enter as a decimal: ")
+intRate = float(intRate)  # Convert to a float
+sensitivityHigh = intRate + 0.02
+sensitivityLow = intRate - 0.02
+
+# Integer Everything
+retirementExpenditure = int(retirementExpenditure)
+age = int(age)
+retirementAge = int(retirementAge)
+isPrincipal = int(isPrincipal)
+
+# Calculating working and retirement years
+workingYears = retirementAge - age
+retirementYears = 82 - retirementAge  # Assuming average lifespan of 82 years
+
+
+########################################################################################################################
+# Calculates how much you'll need to contribute/invest to reach that above value.
+# Assumes contributing at the end of year - ordinary annuity
+def calculatingAnnuityPayments(interest_rate, years, PV, principal):
+    if principal == 0:
+        payment = PV / ((((1 + interest_rate) ** years) - 1) / interest_rate)
+        payment = round(payment, 2)  # Rounding
+        payment = max(payment, 0)  # Payment is the max of 0 and the actual calculated figure
+        print("You'll need to deposit ${:0,.0f} dollars per year to be able to spend ${:0,.0f} per year in "
+              "retirement.".format(payment, retirementExpenditure).replace('$-', '$-'))
+    else:
+        temp = float(PV - float((principal * (1 + interest_rate) ** years)))
+        payment = temp / (((1 + interest_rate) ** years - 1) / interest_rate)
+        payment = round(payment, 2)
+        payment = max(payment, 0)
+        print("If you deposit ${:0,.0f} dollars and contribute ${:0,.0f} per year, you'll be able to spend ${:0,.0f} "
+              "per year in retirement.".format(principal, payment, retirementExpenditure).replace('$-', '$-'))
+
+
+########################################################################################################################
+# Used annuity payout formula to find this value
+def presValue(retExp, retYrs, annGrowth):
+    temp = (retExp * ((1 + annGrowth) ** retYrs - 1))
+    pv = temp / (annGrowth * (1 + annGrowth) ** retYrs)
+    return pv
+
+
+########################################################################################################################
+
+presentValue = presValue(retirementExpenditure, retirementYears, 0.035)  # Used 3.5% as annuity growth
+
+print('\n')
+print("Based on your goals, you'll need your portfolio to be valued at"
+      " ${:0,.0f} within ".format(presentValue).replace('$-', '$-') + str(workingYears) + " years.")
+
+print("")
+print("Assuming an " + str(intRate * 100) + "% rate of return...")
+calculatingAnnuityPayments(intRate, workingYears, presentValue, isPrincipal)
+print("")
+
+print("If you reached " + str(sensitivityHigh * 100) + "% rate of return...")
+calculatingAnnuityPayments(sensitivityHigh, workingYears, presentValue, isPrincipal)
+print("")
+
+print("If you only managed to get " + str(sensitivityLow * 100) + "% rate of return...")
+calculatingAnnuityPayments(sensitivityLow, workingYears, presentValue, isPrincipal)
+
